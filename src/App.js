@@ -1,23 +1,103 @@
-import logo from './logo.svg';
+import { useState, useEffect } from 'react';
+import { Button, Typography, Container, TextField } from '@mui/material';
+import Grid from '@mui/material/Unstable_Grid2';
+import LocalMallRoundedIcon from '@mui/icons-material/LocalMallRounded';
+import BasicAlerts from './Alert';
 import './App.css';
+import ProductList from './ProductList';
 
 function App() {
+  const [products, setProducts] = useState('');
+  const [quantity, setQuantity] = useState('');
+  const [listOfProducts, setListOfProduct] = useState(
+    JSON.parse(localStorage.getItem('list')) || []
+  );
+  const [showWarning, setShowWarning] = useState(false);
+
+  useEffect(() => {
+    localStorage.setItem('list', JSON.stringify(listOfProducts));
+  }, [listOfProducts]);
+
+  const handleClickButton = () => {
+    if (!products) {
+      setShowWarning(true);
+      return;
+    }
+    setListOfProduct([
+      ...listOfProducts,
+      { products, quantity: quantity || 1 },
+    ]);
+    setProducts('');
+    setQuantity('');
+  };
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
+    <div className='App'>
+      <Typography variant='h6' m={6}>
+        Shopping list
+      </Typography>
+      <Container maxWidth='sm'>
+        <Grid container mb={2} spacing={1}>
+          <Grid xs={6}>
+            <TextField
+              id='outlined-basic'
+              label='product'
+              variant='outlined'
+              placeholder='input product name'
+              value={products}
+              onChange={e => {
+                setProducts(e.target.value);
+                setShowWarning(false);
+              }}
+              sx={{ width: '100%', padding: 0 }}
+            />
+          </Grid>
+          <Grid xs={2}>
+            <TextField
+              type='number'
+              id='outlined-basic'
+              label='amount'
+              variant='outlined'
+              placeholder='0'
+              value={quantity}
+              onChange={e => {
+                const inputQuantity = parseInt(e.target.value);
+                if (inputQuantity >= 0) {
+                  setQuantity(inputQuantity);
+                }
+              }}
+              sx={{ width: '100%' }}
+            />
+          </Grid>
+          <Grid xs={4}>
+            <Button
+              variant='outlined'
+              endIcon={<LocalMallRoundedIcon />}
+              onClick={handleClickButton}
+              sx={{ width: '100%', height: '100%' }}
+            >
+              Add to list
+            </Button>
+          </Grid>
+        </Grid>
+        {showWarning && <BasicAlerts />}
+        <ProductList
+          list={listOfProducts}
+          style={{ display: 'flex', justifyContent: 'space-between' }}
+        />
+        {listOfProducts.length !== 0 && (
+          <Button
+            variant='outlined'
+            sx={{ marginRight: 1 }}
+            onClick={() => {
+              setListOfProduct([]);
+              localStorage.removeItem('list');
+            }}
+          >
+            Clear List
+          </Button>
+        )}
+      </Container>
     </div>
   );
 }
