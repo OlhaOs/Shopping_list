@@ -25,12 +25,26 @@ function App() {
     }
     setListOfProduct([
       ...listOfProducts,
-      { products, quantity: quantity || 1 },
+      { products, quantity: quantity || 1, completed: false },
     ]);
     setProducts('');
     setQuantity('');
   };
+  const purchaseIsDone = id => {
+    const updatedList = listOfProducts.map((item, index) => {
+      if (index === id) {
+        return { ...item, completed: !item.completed };
+      }
+      return item;
+    });
+    setListOfProduct(updatedList);
+  };
 
+  const handleRemoveCompleted = () => {
+    const updatedList = listOfProducts.filter(item => !item.completed);
+    setListOfProduct(updatedList);
+    localStorage.setItem('list', JSON.stringify(updatedList));
+  };
   return (
     <div className='App'>
       <Typography variant='h6' m={6}>
@@ -80,21 +94,30 @@ function App() {
             </Button>
           </Grid>
         </Grid>
-        {showWarning && <BasicAlerts />}
+        {showWarning && <BasicAlerts sx={{ marginTop: 10 }} />}
         <ProductList
           list={listOfProducts}
-          style={{ display: 'flex', justifyContent: 'space-between' }}
+          purchaseIsDone={purchaseIsDone}
+          sx={{ display: 'flex', justifyContent: 'space-between' }}
         />
         {listOfProducts.length !== 0 && (
           <Button
             variant='outlined'
-            sx={{ marginRight: 1 }}
             onClick={() => {
               setListOfProduct([]);
               localStorage.removeItem('list');
             }}
           >
-            Clear List
+            Remove All
+          </Button>
+        )}
+        {listOfProducts.length !== 0 && (
+          <Button
+            sx={{ marginLeft: 1 }}
+            variant='outlined'
+            onClick={handleRemoveCompleted}
+          >
+            Remove completed
           </Button>
         )}
       </Container>

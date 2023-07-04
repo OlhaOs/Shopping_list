@@ -4,22 +4,19 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import { Checkbox } from '@mui/material';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
-export default function CheckboxList({ list }) {
+export default function CheckboxList({ list, purchaseIsDone }) {
   const [checked, setChecked] = useState([]);
 
-  const handleToggle = value => () => {
-    const currentIndex = checked.indexOf(value);
-    const newChecked = [...checked];
+  useEffect(() => {
+    const completedProducts = list.filter(item => item.completed);
+    setChecked(completedProducts);
+  }, [list]);
 
-    if (currentIndex === -1) {
-      newChecked.push(value);
-    } else {
-      newChecked.splice(currentIndex, 1);
-    }
-
-    setChecked(newChecked);
+  const handleToggle = (value, productId) => () => {
+    setChecked(prevChecked => [...prevChecked, productId]);
+    purchaseIsDone(productId);
   };
 
   return (
@@ -29,7 +26,6 @@ export default function CheckboxList({ list }) {
           <ListItem
             key={index}
             disablePadding
-            onClick={handleToggle(value)}
             sx={{
               borderRadius: '4px',
               backgroundColor:
@@ -39,7 +35,10 @@ export default function CheckboxList({ list }) {
               mb: '4px',
             }}
           >
-            <ListItemButton role={undefined} onClick={handleToggle(value)}>
+            <ListItemButton
+              role={undefined}
+              onClick={handleToggle(value, index)}
+            >
               <ListItemIcon>
                 <Checkbox
                   padding={10}
